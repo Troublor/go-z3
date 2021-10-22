@@ -3,6 +3,7 @@ package z3
 // #include <stdlib.h>
 // #include "go-z3.h"
 import "C"
+import "math/big"
 
 // AST represents an AST value in Z3.
 //
@@ -53,6 +54,13 @@ func (c *Context) Int(v int, typ *Sort) *AST {
 	}
 }
 
+func (c *Context) BigInt(v *big.Int, typ *Sort) *AST {
+	return &AST{
+		rawCtx: c.raw,
+		rawAST: C.Z3_mk_numeral(c.raw, C.CString(v.String()), typ.rawSort),
+	}
+}
+
 // True creates the value "true".
 //
 // Maps: Z3_mk_true
@@ -83,4 +91,19 @@ func (a *AST) Int() int {
 	var dst C.int
 	C.Z3_get_numeral_int(a.rawCtx, a.rawAST, &dst)
 	return int(dst)
+}
+
+func (a *AST) IntString() string {
+	dst := C.Z3_get_numeral_string(a.rawCtx, a.rawAST)
+	return string(C.GoString(dst))
+}
+
+func (a *AST) BigInt() *big.Int {
+	s := a.IntString()
+	v := new(big.Int)
+	r, ok := v.SetString(s, 10)
+	if !ok {
+		panic("Cannot convert to big.Int")
+	}
+	return r
 }

@@ -64,6 +64,17 @@ func (a *AST) Sub(args ...*AST) *AST {
 	}
 }
 
+func (a *AST) Div(arg *AST) *AST {
+	return &AST{
+		rawCtx: a.rawCtx,
+		rawAST: C.Z3_mk_div(
+			a.rawCtx,
+			a.rawAST,
+			arg.rawAST,
+		),
+	}
+}
+
 // Lt creates a "less than" comparison.
 //
 // Maps to: Z3_mk_lt
