@@ -1,2 +1,5 @@
 libz3.a
 vendor/
+libz3.zip
+lib/
+.idea/

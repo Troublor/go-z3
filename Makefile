@@ -1,27 +1,27 @@
 Z3_REF ?= master
 
-all: libz3.a test
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	prebuiltPkg=z3-4.8.13-x64-osx-10.16.zip
+else
+	prebuiltPkg=z3-4.8.13-x64-glibc-2.31.zip
+endif
+
+all: lib test
 
 clean:
-	rm -rf vendor
-	rm -f libz3.a
+	rm -rf lib
 
 gofmt:
 	@echo "Checking code with gofmt.."
 	gofmt -s *.go >/dev/null
 
-libz3.a: vendor/z3
-	cd vendor/z3 && python scripts/mk_make.py --staticlib
-	cd vendor/z3/build && ${MAKE}
-	cp vendor/z3/build/libz3.a .
-
-vendor/z3:
-	mkdir -p vendor
-	git clone https://github.com/Z3Prover/z3.git vendor/z3
-	cd vendor/z3 && git reset --hard && git clean -fdx
-	cd vendor/z3 && git checkout ${Z3_REF}
-
 test: gofmt
 	go test -v
 
-.PHONY: all clean libz3.a test
+lib:
+	curl -L "https://github.com/Z3Prover/z3/releases/download/z3-4.8.13/$(prebuiltPkg)" -o libz3.zip
+	unzip libz3.zip
+	mv z3-4.8.13-x64-osx-10.16 lib
+
+.PHONY: all clean test lib
